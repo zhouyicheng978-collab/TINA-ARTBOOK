@@ -4,18 +4,641 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EMBERS IN THE SEA | 海水燃烬</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+        background: #020716;
+        color: #f2f7ff;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        overflow-x: hidden;
+        background:
+          radial-gradient(circle at 72% 18%, rgba(77, 107, 136, 0.2), transparent 26rem),
+          radial-gradient(circle at 10% 84%, rgba(20, 59, 86, 0.34), transparent 34rem),
+          linear-gradient(135deg, #01040e 0%, #031025 52%, #010713 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+        background-size: 68px 68px;
+        mask-image: linear-gradient(to bottom, black, transparent 80%);
+        z-index: 1;
+      }
+
+      a { color: inherit; text-decoration: none; }
+      .particle-field {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        opacity: .78;
+        mix-blend-mode: screen;
+        pointer-events: none;
+      }
+
+      .site-shell { position: relative; z-index: 2; }
+      .section { min-height: 100vh; padding: 120px clamp(22px, 8vw, 148px); }
+
+      .hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 430px);
+        align-items: center;
+        gap: clamp(24px, 7vw, 92px);
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 12% 2% auto auto;
+        width: min(48vw, 620px);
+        aspect-ratio: 1;
+        background: url("/brand/ma.png") center / contain no-repeat;
+        opacity: .055;
+        transform: rotate(-8deg);
+        pointer-events: none;
+      }
+
+      .kicker {
+        margin: 0 0 18px;
+        color: rgba(183,207,229,.72);
+        font-size: 13px;
+        letter-spacing: .18em;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        max-width: 980px;
+        margin: 0;
+        font-size: clamp(58px, 9.4vw, 142px);
+        line-height: .9;
+      }
+
+      .hero h2 {
+        margin: 24px 0 42px;
+        font-family: "Noto Serif SC", "Songti SC", serif;
+        font-size: clamp(30px, 4vw, 58px);
+        font-weight: 500;
+        color: #dceeff;
+      }
+
+      .intro-block {
+        max-width: 760px;
+        display: grid;
+        gap: 14px;
+        margin: 0 0 30px;
+        color: rgba(235,245,255,.9);
+        font-size: clamp(16px, 1.45vw, 22px);
+        line-height: 1.62;
+      }
+
+      .intro-block p { margin: 0; }
+      .intro-block.muted {
+        max-width: 820px;
+        color: rgba(183,204,224,.72);
+        font-size: clamp(14px, 1.05vw, 17px);
+      }
+
+      .scroll-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 44px;
+        margin-top: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid rgba(234,246,255,.44);
+        color: #f6fbff;
+        font-weight: 650;
+      }
+
+      .badge-stage {
+        position: relative;
+        height: min(68vh, 680px);
+        min-height: 520px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        user-select: none;
+      }
+
+      .badge-rig {
+        position: relative;
+        width: 280px;
+        height: 548px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        cursor: grab;
+        touch-action: none;
+        transform-origin: 50% 0;
+      }
+      .badge-rig:active { cursor: grabbing; }
+
+      .lanyard-anchor {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 30px;
+        height: 30px;
+        transform: translateX(-50%);
+        border: 1px solid rgba(215,237,255,.28);
+        border-radius: 50%;
+        background: rgba(3,9,21,.82);
+        box-shadow: 0 0 0 9px rgba(0,0,0,.22), 0 18px 40px rgba(0,0,0,.28);
+      }
+
+      .lanyard {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 78px;
+        height: 214px;
+        transform: translateX(-50%);
+        pointer-events: none;
+      }
+
+      .lanyard span {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 13px;
+        border-radius: 18px;
+        background: repeating-linear-gradient(to bottom, #061122 0 34px, #eaf6ff 34px 41px, #061122 41px 72px);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.1);
+      }
+      .lanyard span:first-child { left: 22px; transform: rotate(7deg); }
+      .lanyard span:last-child { right: 22px; transform: rotate(-7deg); }
+
+      .badge {
+        position: absolute;
+        top: 212px;
+        left: 50%;
+        width: 250px;
+        min-height: 360px;
+        margin-left: -125px;
+        padding: 40px 22px 22px;
+        border: 1px solid rgba(207,231,255,.16);
+        border-radius: 8px;
+        background:
+          linear-gradient(155deg, rgba(255,255,255,.06), transparent 24%),
+          linear-gradient(180deg, rgba(6,15,29,.96), rgba(0,3,10,.98));
+        color: #f8fbff;
+        box-shadow: 0 32px 90px rgba(0,0,0,.44), inset 0 0 42px rgba(99,139,174,.09);
+        text-align: left;
+        pointer-events: none;
+      }
+
+      .badge-hole {
+        position: absolute;
+        top: -22px;
+        left: 50%;
+        width: 38px;
+        height: 38px;
+        transform: translateX(-50%);
+        border: 1px solid rgba(212,233,255,.25);
+        border-radius: 50%;
+        background: rgba(0,5,14,.72);
+        box-shadow: 0 0 0 8px rgba(0,0,0,.28);
+      }
+
+      .badge-hole::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 34px;
+        width: 2px;
+        height: 16px;
+        transform: translateX(-50%);
+        background: rgba(219,238,255,.28);
+      }
+
+      .badge-mark {
+        display: block;
+        width: 112px;
+        height: 112px;
+        object-fit: contain;
+        margin: 0 auto 16px;
+        filter: drop-shadow(0 0 18px rgba(206,231,255,.17));
+      }
+
+      .badge p { margin: 0; font-size: 22px; font-weight: 800; }
+      .badge small {
+        display: block;
+        margin-top: 8px;
+        color: rgba(201,220,239,.74);
+        font-size: 11px;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+      .badge-lines {
+        height: 118px;
+        margin: 22px -8px 12px;
+        opacity: .32;
+        background:
+          repeating-linear-gradient(135deg, transparent 0 14px, rgba(213,234,255,.28) 15px 16px, transparent 17px 30px),
+          repeating-linear-gradient(45deg, transparent 0 14px, rgba(213,234,255,.16) 15px 16px, transparent 17px 30px);
+        mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+      }
+      .badge b {
+        display: block;
+        text-align: right;
+        color: rgba(234,244,255,.58);
+        font-size: 13px;
+        letter-spacing: .08em;
+      }
+
+      .fortune {
+        display: grid;
+        place-items: center;
+        text-align: center;
+        background: linear-gradient(to bottom, transparent, rgba(1,11,26,.64), transparent);
+      }
+      .fortune-inner { max-width: 940px; }
+      .section-icon {
+        display: inline-grid;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(212,234,255,.22);
+        border-radius: 50%;
+        color: #d8ebff;
+        background: rgba(255,255,255,.035);
+      }
+
+      .fortune h2, .gallery-heading h2 {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+        font-size: clamp(44px, 7vw, 104px);
+        font-weight: 500;
+        line-height: 1;
+      }
+      .fortune h3 {
+        margin: 22px 0 8px;
+        font-family: "Noto Serif SC", "Songti SC", serif;
+        font-size: clamp(28px, 4vw, 52px);
+        font-weight: 500;
+        color: #d9ebff;
+      }
+      .cn-line, .moon-note { color: rgba(205,224,241,.78); font-size: 18px; }
+      blockquote {
+        max-width: 760px;
+        margin: 64px auto 34px;
+        color: #f5fbff;
+        font-size: clamp(24px, 3vw, 42px);
+        line-height: 1.28;
+      }
+      blockquote span {
+        display: block;
+        margin-top: 18px;
+        color: rgba(198,221,241,.74);
+        font-family: "Noto Serif SC", "Songti SC", serif;
+        font-size: .6em;
+      }
+      .moon-note { margin: 0 0 8px; line-height: 1.6; }
+      .moon-note.cn { font-family: "Noto Serif SC", "Songti SC", serif; }
+
+      .gallery { padding-top: 145px; }
+      .gallery-heading { max-width: 900px; margin-bottom: 70px; }
+      .gallery-heading p:last-child {
+        max-width: 680px;
+        color: rgba(198,218,237,.74);
+        font-size: 18px;
+        line-height: 1.8;
+      }
+      .art-grid { column-count: 3; column-gap: clamp(18px, 2.4vw, 34px); }
+      .art-card {
+        display: inline-block;
+        width: 100%;
+        margin: 0 0 clamp(18px, 2.4vw, 34px);
+        transform: translateY(var(--offset, 0));
+        break-inside: avoid;
+      }
+      .art-card:nth-child(3n + 2) { --offset: 54px; }
+      .art-card:nth-child(4n) { --offset: -18px; }
+      .art-card img {
+        display: block;
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 4px;
+        border: 1px solid rgba(214,235,255,.13);
+        background: rgba(255,255,255,.025);
+        box-shadow: 0 24px 80px rgba(0,0,0,.36);
+        filter: saturate(.82) contrast(1.02);
+      }
+      figcaption {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        margin-top: 12px;
+        color: rgba(208,228,246,.64);
+        font-size: 12px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+      }
+      figcaption p { margin: 0; text-align: right; }
+
+      .closing { display: grid; place-items: center; min-height: 112vh; text-align: center; }
+      .closing-copy { max-width: 860px; }
+      .closing-copy p {
+        margin: 0 0 40px;
+        color: rgba(241,248,255,.9);
+        font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+        font-size: clamp(22px, 3vw, 39px);
+        line-height: 1.55;
+      }
+      .closing-copy .cn {
+        color: rgba(210,230,247,.78);
+        font-family: "Noto Serif SC", "Songti SC", serif;
+        font-size: clamp(18px, 2.1vw, 30px);
+      }
+      .seal {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 24px;
+        color: rgba(215,232,248,.66);
+        font-size: 12px;
+        letter-spacing: .18em;
+        text-transform: uppercase;
+      }
+      .final-mark {
+        display: block;
+        width: clamp(120px, 17vw, 230px);
+        height: auto;
+        margin: clamp(58px, 8vw, 110px) auto 0;
+        opacity: .82;
+        filter: drop-shadow(0 0 34px rgba(187,218,245,.16));
+      }
+
+      [data-reveal] {
+        opacity: 0;
+        transform: translateY(34px);
+        transition: opacity 900ms ease, transform 900ms ease;
+        transition-delay: var(--delay, 0ms);
+      }
+      [data-reveal].is-visible { opacity: 1; transform: translateY(var(--offset, 0)); }
+
+      @media (max-width: 980px) {
+        .hero { grid-template-columns: 1fr; padding-top: 96px; }
+        .badge-stage { height: 560px; min-height: 520px; }
+        .art-grid { column-count: 2; }
+      }
+      @media (max-width: 680px) {
+        .section { padding: 96px 20px; }
+        .hero h1 { font-size: clamp(50px, 17vw, 78px); }
+        .hero h2 { margin-bottom: 30px; }
+        .intro-block { font-size: 15px; }
+        .badge-stage { min-height: 500px; height: 520px; }
+        .badge-rig { width: 240px; height: 500px; }
+        .lanyard { height: 190px; }
+        .badge { top: 190px; width: 218px; min-height: 330px; margin-left: -109px; }
+        .badge-mark { width: 96px; height: 96px; }
+        .art-grid { column-count: 1; }
+        .art-card { --offset: 0 !important; }
+        .fortune h2, .gallery-heading h2 { font-size: clamp(38px, 13vw, 64px); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root">
-      <main style="min-height:100vh;display:grid;place-items:center;padding:48px;background:#020716;color:#f2f7ff;font-family:Georgia,'Noto Serif SC',serif;text-align:center">
-        <section>
-          <img src="/brand/ma.png" alt="" style="width:min(210px,45vw);height:auto;margin-bottom:32px;opacity:.86" />
-          <p style="margin:0 0 12px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#9fb6ca">Personal Memos / 一个人画册</p>
-          <h1 style="margin:0;font-size:clamp(44px,10vw,96px);line-height:.9">EMBERS<br />IN THE SEA</h1>
-          <p style="margin:24px 0 0;font-size:clamp(24px,5vw,42px)">海水燃烬</p>
+    <canvas class="particle-field" aria-hidden="true"></canvas>
+    <div class="site-shell">
+      <main>
+        <section class="hero section">
+          <div class="hero-copy" data-reveal>
+            <p class="kicker">Personal Memos / 一个人画册</p>
+            <h1>EMBERS<br />IN THE SEA</h1>
+            <h2>海水燃烬</h2>
+            <div class="intro-block">
+              <p>“I invite you to take part in this dream,<br />and we are all co-creators of this dreamscape.”</p>
+              <p>“邀请你，参与这场梦，<br />而我们，都是这场梦境的共创者。”</p>
+            </div>
+            <div class="intro-block muted">
+              <p>“Lost souls fill this building, wandering all day long,<br />longing for revenge with broken hearts.<br />Before the night comes,<br />they wish to share some secrets with you.”</p>
+              <p>“这幢楼里住着许多失落的恶魂，终日游荡着，<br />怀着破碎的心，渴望复仇。<br />在夜晚来临之前，<br />他们想透露一些秘密给你听。”</p>
+            </div>
+            <a class="scroll-link" href="#gallery"><span aria-hidden="true">↓</span> Enter Archive</a>
+          </div>
+
+          <div class="badge-stage">
+            <button class="badge-rig" aria-label="Drag gallery pass">
+              <div class="lanyard-anchor"></div>
+              <div class="lanyard"><span></span><span></span></div>
+              <div class="badge">
+                <div class="badge-hole"></div>
+                <img class="badge-mark" src="/brand/ma.png" alt="" draggable="false" />
+                <p>YICHENG ZHOU</p>
+                <small>Archive Pass / Personal Memos</small>
+                <div class="badge-lines"></div>
+                <b>GALLERY PASS</b>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <section class="fortune section">
+          <div class="fortune-inner" data-reveal>
+            <div class="section-icon">☾</div>
+            <h2>Fortune favors the brave.</h2>
+            <h3>天佑勇者</h3>
+            <p class="cn-line">命运总是眷顾勇敢的人。</p>
+            <blockquote>
+              Do not swear by the moon, for it is fickle.
+              <span>不要指着月亮起誓，它自己都变化无常。</span>
+            </blockquote>
+            <p class="moon-note">We trust that the moon shall guide us.<br />We shall be intimate with darkness.</p>
+            <p class="moon-note cn">相信月亮的指引<br />拥抱黑暗。</p>
+          </div>
+        </section>
+
+        <section id="gallery" class="gallery section">
+          <div class="gallery-heading" data-reveal>
+            <div class="section-icon">§</div>
+            <p class="kicker">HUA / Archive Plates</p>
+            <h2>Images That Keep Their Secrets</h2>
+            <p>画册被整理成一个缓慢展开的私人档案，像夜里的房间、信件、证词和未完成的梦。</p>
+          </div>
+          <div class="art-grid" id="art-grid"></div>
+        </section>
+
+        <section class="closing section">
+          <div class="closing-copy" data-reveal>
+            <div class="section-icon">✦</div>
+            <p>
+              And so, let go.<br />
+              When the dream comes to an end,<br />
+              stop trying so hard to distinguish the real from the unreal.<br />
+              Stop insisting on naming every love and every pain.<br />
+              Let everything remain in memory, softly blurred.<br />
+              Images speak in silence,<br />
+              yet they leave behind whatever you wish to keep.<br />
+              Enter the dream. Lose yourself. Leave.<br />
+              Bless the brave.<br />
+              Until we meet again.
+            </p>
+            <p class="cn">
+              于是放下。<br />
+              当梦境终结时，<br />
+              不再用力去辨别真实与虚幻，<br />
+              不再执意表达爱或痛。<br />
+              开始允许一切模糊地留存在记忆中。<br />
+              图像无言，会留下你想留下的东西。<br />
+              入梦，迷失，离开。<br />
+              天佑勇者，后会有期。
+            </p>
+            <div class="seal"><span aria-hidden="true">✧</span> EMBERS IN THE SEA / 海水燃烬</div>
+            <img class="final-mark" src="/brand/ma.png" alt="" data-reveal />
+          </div>
         </section>
       </main>
     </div>
-    <script type="module" src="/src/main.jsx"></script>
+
+    <script>
+      const artworks = Array.from({ length: 24 }, (_, index) => `art-${String(index + 1).padStart(2, "0")}.webp`);
+      const titles = [
+        "Banquo / The Burnt Wing",
+        "Blue Rooms and Lost Corridors",
+        "Porter Keeps Waiting",
+        "The Eye Remembers",
+        "Before the Night Comes",
+        "Red Cord Archive"
+      ];
+
+      const grid = document.querySelector("#art-grid");
+      artworks.forEach((file, index) => {
+        const figure = document.createElement("figure");
+        figure.className = "art-card";
+        figure.dataset.reveal = "";
+        figure.style.setProperty("--delay", `${(index % 8) * 70}ms`);
+        figure.innerHTML = `
+          <img src="/artbook-web/${file}" alt="Archive plate ${index + 1}" loading="lazy" />
+          <figcaption><span>${String(index + 1).padStart(2, "0")}</span><p>${titles[index % titles.length]}</p></figcaption>
+        `;
+        grid.appendChild(figure);
+      });
+
+      const reveal = () => {
+        const items = document.querySelectorAll("[data-reveal]");
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) entry.target.classList.add("is-visible");
+          });
+        }, { threshold: 0.12 });
+        items.forEach((item) => observer.observe(item));
+      };
+
+      const particles = () => {
+        const canvas = document.querySelector(".particle-field");
+        const ctx = canvas.getContext("2d");
+        let width = 0;
+        let height = 0;
+        let points = [];
+
+        const reset = () => {
+          const dpr = window.devicePixelRatio || 1;
+          width = window.innerWidth;
+          height = window.innerHeight;
+          canvas.width = width * dpr;
+          canvas.height = height * dpr;
+          canvas.style.width = `${width}px`;
+          canvas.style.height = `${height}px`;
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          const count = Math.min(420, Math.floor((width * height) / 5200));
+          points = Array.from({ length: count }, (_, index) => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            size: Math.random() > .82 ? 2 : 1,
+            alpha: .18 + Math.random() * .5,
+            speed: .12 + Math.random() * .28,
+            wave: Math.random() * Math.PI * 2,
+            band: index % 7
+          }));
+        };
+
+        const draw = (time) => {
+          ctx.clearRect(0, 0, width, height);
+          points.forEach((p) => {
+            p.x += p.speed;
+            p.y -= p.speed * .58;
+            p.wave += .006;
+            if (p.x > width + 12 || p.y < -12) {
+              p.x = -12 - Math.random() * 140;
+              p.y = height + Math.random() * 120;
+            }
+            const contour = Math.sin(p.x * .006 + p.band) + Math.cos(p.y * .008 - p.band);
+            if (contour <= -.18 && p.band !== 0) return;
+            const shimmer = .55 + Math.sin(time * .001 + p.wave) * .25;
+            ctx.fillStyle = `rgba(196, 215, 232, ${p.alpha * shimmer})`;
+            ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+          });
+          requestAnimationFrame(draw);
+        };
+
+        reset();
+        window.addEventListener("resize", reset);
+        requestAnimationFrame(draw);
+      };
+
+      const badgePhysics = () => {
+        const rig = document.querySelector(".badge-rig");
+        const s = { x: 0, y: 0, vx: 0, vy: 0, angle: 0, av: 0, targetX: 0, targetY: 0, dragging: false, homeX: 0, homeY: 0, ox: 0, oy: 0 };
+
+        const tick = () => {
+          const stiffness = s.dragging ? .2 : .035;
+          const damping = s.dragging ? .72 : .91;
+          const gravity = s.dragging ? .1 : .18;
+          s.vx = (s.vx + (s.targetX - s.x) * stiffness) * damping;
+          s.vy = (s.vy + (s.targetY - s.y) * stiffness + gravity) * damping;
+          s.x += s.vx;
+          s.y += s.vy;
+          const angleTarget = Math.max(-18, Math.min(18, s.x * .05 + s.vx * 2.6));
+          s.av = (s.av + (angleTarget - s.angle) * .075) * .86;
+          s.angle = Math.max(-20, Math.min(20, s.angle + s.av));
+          rig.style.transform = `translate3d(${s.x}px, ${s.y}px, 0) rotate(${s.angle}deg)`;
+          requestAnimationFrame(tick);
+        };
+
+        rig.addEventListener("pointerdown", (event) => {
+          const rect = rig.getBoundingClientRect();
+          s.dragging = true;
+          s.homeX = rect.left + rect.width / 2 - s.x;
+          s.homeY = rect.top + 230 - s.y;
+          s.ox = event.clientX - rect.left - rect.width / 2;
+          s.oy = event.clientY - rect.top - 230;
+          rig.setPointerCapture(event.pointerId);
+        });
+        rig.addEventListener("pointermove", (event) => {
+          if (!s.dragging) return;
+          s.targetX = event.clientX - s.homeX - s.ox;
+          s.targetY = event.clientY - s.homeY - s.oy;
+        });
+        const release = () => {
+          s.dragging = false;
+          s.targetX = 0;
+          s.targetY = 0;
+        };
+        rig.addEventListener("pointerup", release);
+        rig.addEventListener("pointercancel", release);
+        requestAnimationFrame(tick);
+      };
+
+      reveal();
+      particles();
+      badgePhysics();
+    </script>
   </body>
 </html>

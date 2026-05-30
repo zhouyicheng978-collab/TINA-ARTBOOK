@@ -1,6 +1,6 @@
 # EMBERS IN THE SEA / 海水燃烬
 
-A personal digital artbook website built with React + Vite.
+A personal digital artbook website. The deployable version is self-contained in `index.html` and uses local assets from `public/`.
 
 ## Run Locally
 
@@ -41,10 +41,10 @@ The production files will be generated in `dist/`.
 
 ## Editing
 
-- Update homepage text and section copy in `src/main.jsx`.
+- Update homepage text, styling, and interactions in `index.html`.
 - Replace or add artbook images in `public/artbook-web`.
 - Replace the MA visual in `public/brand/ma.png`.
-- Tune atmosphere, layout, and motion in `src/styles.css`.
+- The old `src/` files are kept only as source history; the live page is `index.html`.
 
 ## Deployment
 
