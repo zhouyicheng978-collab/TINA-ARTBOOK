@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ArrowDown, BookOpen, Compass, Moon, Sparkles } from "lucide-react";
 import "./styles.css";
 
 const artworks = [
@@ -130,12 +129,14 @@ function useReveal() {
 }
 
 function DraggableBadge() {
-  const badgeRef = useRef(null);
+  const rigRef = useRef(null);
   const state = useRef({
     x: 0,
     y: 0,
     vx: 0,
     vy: 0,
+    angle: 0,
+    av: 0,
     targetX: 0,
     targetY: 0,
     dragging: false,
@@ -150,20 +151,24 @@ function DraggableBadge() {
     let frame;
     const animate = () => {
       const s = state.current;
-      const stiffness = s.dragging ? 0.28 : 0.045;
-      const damping = s.dragging ? 0.68 : 0.9;
+      const stiffness = s.dragging ? 0.2 : 0.035;
+      const damping = s.dragging ? 0.72 : 0.91;
+      const gravity = s.dragging ? 0.1 : 0.18;
       const ax = (s.targetX - s.x) * stiffness;
-      const ay = (s.targetY - s.y) * stiffness;
+      const ay = (s.targetY - s.y) * stiffness + gravity;
       s.vx = (s.vx + ax) * damping;
       s.vy = (s.vy + ay) * damping;
       s.x += s.vx;
       s.y += s.vy;
 
-      const nextAngle = Math.max(-12, Math.min(12, s.vx * 1.8 + s.x * 0.018));
+      const angleTarget = Math.max(-18, Math.min(18, s.x * 0.05 + s.vx * 2.6));
+      s.av = (s.av + (angleTarget - s.angle) * 0.075) * 0.86;
+      s.angle += s.av;
+      const nextAngle = Math.max(-20, Math.min(20, s.angle));
       setAngle(nextAngle);
 
-      if (badgeRef.current) {
-        badgeRef.current.style.transform = `translate3d(${s.x}px, ${s.y}px, 0) rotate(${nextAngle}deg)`;
+      if (rigRef.current) {
+        rigRef.current.style.transform = `translate3d(${s.x}px, ${s.y}px, 0) rotate(${nextAngle}deg)`;
       }
       frame = requestAnimationFrame(animate);
     };
@@ -173,13 +178,13 @@ function DraggableBadge() {
 
   const onPointerDown = (event) => {
     const s = state.current;
-    const rect = badgeRef.current.getBoundingClientRect();
+    const rect = rigRef.current.getBoundingClientRect();
     s.dragging = true;
     s.homeX = rect.left + rect.width / 2 - s.x;
-    s.homeY = rect.top + rect.height / 2 - s.y;
+    s.homeY = rect.top + 230 - s.y;
     s.pointerOffsetX = event.clientX - rect.left - rect.width / 2;
-    s.pointerOffsetY = event.clientY - rect.top - rect.height / 2;
-    badgeRef.current.setPointerCapture(event.pointerId);
+    s.pointerOffsetY = event.clientY - rect.top - 230;
+    rigRef.current.setPointerCapture(event.pointerId);
   };
 
   const onPointerMove = (event) => {
@@ -197,26 +202,30 @@ function DraggableBadge() {
   };
 
   return (
-    <div className="badge-rig" style={{ "--badge-angle": `${angle}deg` }}>
-      <div className="lanyard">
-        <span />
-        <span />
-      </div>
+    <div className="badge-stage">
       <button
-        ref={badgeRef}
-        className="badge"
+        ref={rigRef}
+        className="badge-rig"
+        style={{ "--badge-angle": `${angle}deg` }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={release}
         onPointerCancel={release}
         aria-label="Drag gallery pass"
       >
-        <div className="badge-hole" />
-        <img className="badge-mark" src="/brand/ma.png" alt="" draggable="false" />
-        <p>YICHENG ZHOU</p>
-        <small>Archive Pass / Personal Memos</small>
-        <div className="badge-lines" />
-        <b>GALLERY PASS</b>
+      <div className="lanyard-anchor" />
+      <div className="lanyard">
+        <span />
+        <span />
+      </div>
+      <div className="badge">
+          <div className="badge-hole" />
+          <img className="badge-mark" src="/brand/ma.png" alt="" draggable="false" />
+          <p>YICHENG ZHOU</p>
+          <small>Archive Pass / Personal Memos</small>
+          <div className="badge-lines" />
+          <b>GALLERY PASS</b>
+        </div>
       </button>
     </div>
   );
@@ -238,7 +247,7 @@ function Hero() {
           <p>“这幢楼里住着许多失落的恶魂，终日游荡着，<br />怀着破碎的心，渴望复仇。<br />在夜晚来临之前，<br />他们想透露一些秘密给你听。”</p>
         </div>
         <a className="scroll-link" href="#gallery">
-          <ArrowDown size={18} />
+          <span aria-hidden="true">↓</span>
           Enter Archive
         </a>
       </div>
@@ -251,7 +260,7 @@ function Fortune() {
   return (
     <section className="fortune section">
       <div className="fortune-inner" data-reveal>
-        <div className="section-icon"><Moon size={18} /></div>
+        <div className="section-icon">☾</div>
         <h2>Fortune favors the brave.</h2>
         <h3>天佑勇者</h3>
         <p className="cn-line">命运总是眷顾勇敢的人。</p>
@@ -280,7 +289,7 @@ function Gallery() {
   return (
     <section id="gallery" className="gallery section">
       <div className="gallery-heading" data-reveal>
-        <div className="section-icon"><BookOpen size={18} /></div>
+        <div className="section-icon">§</div>
         <p className="kicker">HUA / Archive Plates</p>
         <h2>Images That Keep Their Secrets</h2>
         <p>画册被整理成一个缓慢展开的私人档案，像夜里的房间、信件、证词和未完成的梦。</p>
@@ -304,7 +313,7 @@ function Closing() {
   return (
     <section className="closing section">
       <div className="closing-copy" data-reveal>
-        <div className="section-icon"><Compass size={18} /></div>
+        <div className="section-icon">✦</div>
         <p>
           And so, let go.<br />
           When the dream comes to an end,<br />
@@ -328,9 +337,10 @@ function Closing() {
           天佑勇者，后会有期。
         </p>
         <div className="seal">
-          <Sparkles size={15} />
+          <span aria-hidden="true">✧</span>
           EMBERS IN THE SEA / 海水燃烬
         </div>
+        <img className="final-mark" src="/brand/ma.png" alt="" data-reveal />
       </div>
     </section>
   );
@@ -343,13 +353,6 @@ function App() {
     <>
       <ParticleField />
       <div className="site-shell">
-        <header className="topbar">
-          <a href="#" className="brand">MA / HUA</a>
-          <nav>
-            <a href="#gallery">Archive</a>
-            <a href="#gallery">画册</a>
-          </nav>
-        </header>
         <main>
           <Hero />
           <Fortune />
